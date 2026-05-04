@@ -1,0 +1,251 @@
+.dashboard {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.title {
+  font-family: 'Cinzel', serif;
+  font-size: 2.4rem;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.userInfo {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.signOut {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  padding: 0.5rem 1rem;
+  font-family: inherit;
+  font-size: 0.95rem;
+  cursor: pointer;
+  border-radius: 4px;
+  margin-left: 1rem;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.signOut:hover {
+  background: var(--bg-card);
+  border-color: var(--accent-light);
+}
+
+/* ===== Login form ===== */
+.loginWrapper {
+  max-width: 420px;
+  margin: 4rem auto;
+  padding: 2.5rem 2rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow-card);
+}
+
+.loginTitle {
+  font-family: 'Cinzel', serif;
+  font-size: 1.8rem;
+  margin: 0 0 0.5rem;
+  text-align: center;
+  color: var(--text-primary);
+}
+
+.loginSubtitle {
+  text-align: center;
+  color: var(--text-muted);
+  margin: 0 0 2rem;
+  font-size: 0.95rem;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.label {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.input {
+  padding: 0.7rem 0.9rem;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 1rem;
+  transition: border-color 0.15s ease;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--accent-light);
+}
+
+.button {
+  padding: 0.8rem 1rem;
+  background: var(--accent);
+  color: var(--button-on-color-text);
+  border: none;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 0.5rem;
+  transition: background 0.15s ease;
+}
+
+.button:hover:not(:disabled) {
+  background: var(--accent-light);
+}
+
+.button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.error {
+  color: var(--error);
+  background: rgba(132, 71, 62, 0.1);
+  padding: 0.6rem 0.9rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  border: 1px solid var(--error);
+}
+
+/* ===== Sections ===== */
+.section {
+  margin-bottom: 3rem;
+}
+
+.sectionTitle {
+  font-family: 'Cinzel', serif;
+  font-size: 1.4rem;
+  margin: 0 0 1rem;
+  color: var(--text-primary);
+}
+
+.sectionMeta {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin-left: 0.6rem;
+  font-family: 'Spectral', serif;
+  font-weight: 400;
+}
+
+.tableWrap {
+  overflow-x: auto;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.table th {
+  text-align: left;
+  padding: 0.75rem 1rem;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.table td {
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-primary);
+  vertical-align: top;
+}
+
+.table tr:last-child td {
+  border-bottom: none;
+}
+
+.empty {
+  padding: 1.5rem;
+  text-align: center;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.snapshot {
+  font-family: 'Courier New', monospace;
+  font-size: 0.78rem;
+  white-space: pre-wrap;
+  max-width: 480px;
+  color: var(--text-muted);
+}
+
+.tag {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 3px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.tagAdult {
+  background: rgba(160, 172, 137, 0.2);
+  color: var(--accent-light);
+}
+
+.tagChild {
+  background: rgba(110, 102, 91, 0.2);
+  color: var(--text-muted);
+}
+
+.tagPlusOne {
+  background: rgba(132, 71, 62, 0.15);
+  color: var(--error);
+}
+
+.tagInitial {
+  background: rgba(160, 172, 137, 0.2);
+  color: var(--accent-light);
+}
+
+.tagModification {
+  background: rgba(110, 102, 91, 0.2);
+  color: var(--text-muted);
+}
+
+.loading {
+  text-align: center;
+  padding: 3rem;
+  color: var(--text-muted);
+}

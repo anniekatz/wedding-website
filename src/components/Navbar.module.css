@@ -1,0 +1,112 @@
+.navbar {
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  padding: 1.25rem 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  font-family: 'Cinzel', serif;
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  letter-spacing: 0.1em;
+  transition: color 0.3s ease;
+}
+
+.logo:hover {
+  color: var(--text-primary);
+}
+
+.ampersand {
+  color: var(--accent);
+  font-family: 'Cormorant', serif;
+  font-style: italic;
+  font-weight: 400;
+  margin: 0 0.1em;
+}
+
+.links {
+  display: flex;
+  gap: 2.5rem;
+}
+
+.link {
+  font-family: 'Cinzel', serif;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-weight: 625;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.5rem 0;
+  position: relative;
+  transition: color 0.3s ease;
+}
+
+.link:hover {
+  color: var(--text-primary);
+}
+
+.link.active {
+  color: var(--text-primary);
+}
+
+.link::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 1px;
+  background: var(--accent);
+  transition: all 0.3s ease;
+  transform: translateX(-50%);
+}
+
+.link:hover::after,
+.link.active::after {
+  width: 100%;
+}
+
+.themeToggle {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  padding: 0.4rem;
+  line-height: 1;
+  letter-spacing: 0;
+  text-transform: none;
+  transition: color 0.3s ease;
+}
+
+.themeToggle:hover {
+  color: var(--accent);
+  background: none;
+}
+
+@media (max-width: 480px) {
+  .links {
+    gap: 1.5rem;
+  }
+
+  .link {
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+  }
+
+  .logo {
+    font-size: 1.1rem;
+  }
+}
