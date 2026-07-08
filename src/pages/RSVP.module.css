@@ -199,7 +199,7 @@
     flex-direction: column;
   }
 
-  .successActions .button {
+  .successActions :global(.button) {
     width: 100%;
   }
 
@@ -371,6 +371,6 @@
   flex: 1;
 }
 
-.reminderSection .form-group {
+.reminderSection :global(.form-group) {
   margin-top: 1rem;
 }

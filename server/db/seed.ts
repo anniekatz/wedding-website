@@ -62,7 +62,7 @@ export async function seedDb() {
       time: '2027-03-13T17:30:00',
       endTime: '2027-03-13T17:45:00',
       location: 'Museum of Fine Arts, St. Pete',
-      description: 'Find the door with the "Annie and Nick" sign and head in.',
+      description: 'Find the door with the "Annie and Nicholas" sign and head in.',
       order: 1,
     },
     {
@@ -103,7 +103,7 @@ export async function seedDb() {
   await db.insert(faqs).values([
     {
       question: 'When should I get there?',
-      answer: 'Anytime between 5:40 and 5:55 PM is perfect; just make sure to be there before 6! The doors will be closing then as the ceremony starts at 6 PM.',
+      answer: 'Anytime between 5:45 and 6:00 PM is perfect; just make sure to be there before 6:00! The doors will be closing then as the ceremony starts at 6 PM.',
       order: 1,
     },
     {

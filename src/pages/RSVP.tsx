@@ -16,7 +16,6 @@ interface Guest {
 
 interface Household {
   id: number;
-  inviteCode: string;
   name: string;
   allowPlusOne: boolean;
   reminderEmail: string | null;
@@ -107,13 +106,16 @@ export function RSVP() {
       setHouseholdData(data);
 
       // guest RSVPs
+      // preselect the kids meal for kids on a first-time rsvp
+      const childDefaultEntree =
+        entreeOptions.find((o) => o.availableFor === 'child')?.value ?? '';
       const hasExistingRsvp = data.guests.some((g) => g.attending !== null);
       setGuestRsvps(
         data.guests.map((g) => ({
           id: g.id,
           attending: g.attending ?? true,
           comments: g.comments || '',
-          entreeChoice: g.entreeChoice || (!hasExistingRsvp && g.type === 'child' ? 'kidsmeal' : ''),
+          entreeChoice: g.entreeChoice || (!hasExistingRsvp && g.type === 'child' ? childDefaultEntree : ''),
         }))
       );
 
@@ -159,6 +161,21 @@ export function RSVP() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitError('');
+
+    // everybody coming needs an entree
+    for (const rsvp of guestRsvps) {
+      const guest = householdData!.guests.find((g) => g.id === rsvp.id);
+      if (!guest) continue;
+      if (rsvp.attending && !rsvp.entreeChoice && getEntreeOptions(guest.type).length > 0) {
+        setSubmitError(`Please select an entree for ${guest.firstName}.`);
+        return;
+      }
+    }
+    if (bringingPlusOne && !plusOne.entreeChoice && getEntreeOptions('adult').length > 0) {
+      setSubmitError('Please select an entree for your guest.');
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -168,7 +185,9 @@ export function RSVP() {
         body: JSON.stringify({
           householdId: householdData!.household.id,
           guests: guestRsvps,
-          plusOne: bringingPlusOne ? plusOne : undefined,
+          plusOne: householdData!.household.allowPlusOne
+            ? { ...plusOne, attending: bringingPlusOne }
+            : undefined,
           reminderEmail: wantsReminder ? reminderEmail : null,
         }),
       });
@@ -212,7 +231,11 @@ export function RSVP() {
           <h2>Thank You!</h2>
           <p>Your RSVP has been submitted successfully.</p>
           <p className={styles.small}>We can't wait to celebrate with you!</p>
-          <p className={styles.small}>If needed, you may modify your reservation up until {formatDate(import.meta.env.VITE_RSVP_CUTOFF_DATE)}.</p>
+          {rsvpSettings?.cutoffDate && (
+            <p className={styles.small}>
+              If needed, you may modify your reservation up until {formatDate(rsvpSettings.cutoffDate)}.
+            </p>
+          )}
           <div className={styles.successActions}>
             <Link to="/schedule" className="button">
               View Schedule
@@ -309,14 +332,14 @@ export function RSVP() {
     return (
       <div className="container">
         <h1>RSVP</h1>
-        <p>Find your invitation to respond for your party.</p>
+        <p>Find your invitation to respond for your party. Please RSVP for every member of your party.</p>
 
         {rsvpSettings?.cutoffDate && (
           <div className={rsvpSettings.isLocked ? styles.deadlineNotice + ' ' + styles.locked : styles.deadlineNotice}>
             {rsvpSettings.isLocked ? (
               <p>RSVPs are now closed. You can still view your reservation below.</p>
             ) : (
-              <p>Please RSVP by <strong>{formatDate(import.meta.env.VITE_RSVP_CUTOFF_DATE)}</strong>.</p>
+              <p>Please RSVP by <strong>{formatDate(rsvpSettings.cutoffDate)}</strong>.</p>
             )}
           </div>
         )}
@@ -325,6 +348,7 @@ export function RSVP() {
           <button
             type="button"
             className={`${styles.toggleBtn} ${lookupType === 'name' ? styles.active : ''}`}
+            aria-pressed={lookupType === 'name'}
             onClick={() => setLookupType('name')}
           >
             Search by Name
@@ -332,6 +356,7 @@ export function RSVP() {
           <button
             type="button"
             className={`${styles.toggleBtn} ${lookupType === 'code' ? styles.active : ''}`}
+            aria-pressed={lookupType === 'code'}
             onClick={() => setLookupType('code')}
           >
             Enter Code
@@ -417,7 +442,7 @@ export function RSVP() {
 
       {rsvpSettings?.cutoffDate && (
         <div className={styles.deadlineNotice}>
-          <p>Please submit your RSVP by <strong>{formatDate(import.meta.env.VITE_RSVP_CUTOFF_DATE)}</strong>.</p>
+          <p>Please submit your RSVP by <strong>{formatDate(rsvpSettings.cutoffDate)}</strong>.</p>
         </div>
       )}
 
@@ -439,6 +464,7 @@ export function RSVP() {
                 <button
                   type="button"
                   className={`${styles.attendBtn} ${rsvp.attending ? styles.yes : ''}`}
+                  aria-pressed={rsvp.attending}
                   onClick={() => handleGuestChange(guest.id, 'attending', true)}
                 >
                   Joyfully Accepts
@@ -446,6 +472,7 @@ export function RSVP() {
                 <button
                   type="button"
                   className={`${styles.attendBtn} ${!rsvp.attending ? styles.no : ''}`}
+                  aria-pressed={!rsvp.attending}
                   onClick={() => handleGuestChange(guest.id, 'attending', false)}
                 >
                   Regretfully Declines
@@ -462,6 +489,7 @@ export function RSVP() {
                           key={option.value}
                           type="button"
                           className={`${styles.entreeBtn} ${rsvp.entreeChoice === option.value ? styles.selected : ''}`}
+                          aria-pressed={rsvp.entreeChoice === option.value}
                           onClick={() => handleGuestChange(guest.id, 'entreeChoice', option.value)}
                         >
                           {option.label}
@@ -498,6 +526,7 @@ export function RSVP() {
               <button
                 type="button"
                 className={`${styles.attendBtn} ${bringingPlusOne ? styles.yes : ''}`}
+                aria-pressed={bringingPlusOne}
                 onClick={() => setBringingPlusOne(true)}
               >
                 Bringing a Guest
@@ -505,6 +534,7 @@ export function RSVP() {
               <button
                 type="button"
                 className={`${styles.attendBtn} ${!bringingPlusOne ? styles.no : ''}`}
+                aria-pressed={!bringingPlusOne}
                 onClick={() => setBringingPlusOne(false)}
               >
                 Not Bringing
@@ -549,6 +579,7 @@ export function RSVP() {
                         key={option.value}
                         type="button"
                         className={`${styles.entreeBtn} ${plusOne.entreeChoice === option.value ? styles.selected : ''}`}
+                        aria-pressed={plusOne.entreeChoice === option.value}
                         onClick={() => setPlusOne((p) => ({ ...p, entreeChoice: option.value }))}
                       >
                         {option.label}

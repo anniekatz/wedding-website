@@ -9,7 +9,7 @@ export function Navbar() {
     <nav className={styles.navbar}>
       <div className={styles.container}>
         <NavLink to="/" className={styles.logo}>
-          {import.meta.env.VITE_PERSON2_FIRST_NAME[0]} <span className={styles.ampersand}>&</span> {import.meta.env.VITE_PERSON1_FIRST_NAME[0]}
+          {(import.meta.env.VITE_PERSON2_FIRST_NAME || '?').charAt(0)} <span className={styles.ampersand}>&</span> {(import.meta.env.VITE_PERSON1_FIRST_NAME || '?').charAt(0)}
         </NavLink>
         <div className={styles.links}>
           <NavLink

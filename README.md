@@ -203,8 +203,6 @@ await db.insert(faqs).values([
 ]);
 ```
 
-If you seed the database post-first run, delete or move the old `wedding.db` and rerun to create a fresh `wedding.db`.
-
 ### 3. Customize hardcoded content
 
 A few pieces of content are hardcoded in the src. You'll wanna update these:
@@ -245,11 +243,11 @@ Fonts loaded by default:
 Guests can find their invitation two ways:
 
 1. **Invite code**: matched case-insensitively against the `invite_code` column in `households`.
-2. **First + last name**: both names are normalized and compared against all guests. The `nickname` field is also checked so if a guest's nickname is "Johnny, JJ", searching for "JJ Smith" will find them.
+2. **First + last name**: both names are normalized (case, punctuation, and accents are ignored) and compared against all guests. The `nickname` field is also checked so if a guest's nickname is "Johnny, JJ", searching for "JJ Smith" will find them. If the same name matches guests in more than one household, the lookup asks the guest to use their invite code instead of guessing.
 
 ### RSVP locking
 
-The `RSVP_CUTOFF_DATE` env variable controls when RSVPs close. On and after that date:
+The `RSVP_CUTOFF_DATE` env variable controls when RSVPs close. The cutoff date itself is inclusive (guests are told "please RSVP by \<date\>", so they can respond through the end of that day). Starting the day after:
 - The RSVP form shows a "RSVPs are now closed" message
 - Guests can still look up and view their existing reservation, but can't modify it.
 
@@ -264,9 +262,11 @@ Every RSVP submission (initial or modification) is logged to the `rsvp_logs` tab
 
 The admin dashboard lives at `/dashboard`. It has a username/password login and shows RSVP data:
 
-- RSVP logs, including the submitted snapshot
+- Headline stats: attending (adults / children / plus-ones), declined, awaiting households, and per-entrée meal counts for the caterer
 - Guests who are attending/declined
-- Households that have not responded yet
+- Households still awaiting a response, including partial responses ("1 of 3 responded")
+- The RSVP activity log with a readable summary of each submission (raw snapshot expandable)
+- A search box to filter every table by guest, household, or invite code
 
 ## Database Schema
 

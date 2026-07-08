@@ -17,8 +17,10 @@
   --accent-light: #A0AC89;
   --accent-dim: #353C27;
 
-  --border: #6E665B;       
-  --border-alt: #607043; 
+  --border: #6E665B;
+  --border-alt: #607043;
+  --border-light: #948b7e;
+  --accent-glow: rgba(160, 172, 137, 0.25);
   --error: #84473e;
   --success: #7aa17a;
   --shadow-card: 0 16px 40px rgba(0, 0, 0, 0.45);
@@ -54,6 +56,8 @@
 
   --border: #e3dbd5;
   --border-alt: #cbc2bb;
+  --border-light: #cbc2bb;
+  --accent-glow: rgba(96, 112, 67, 0.18);
   --error: #c47272;
   --success: #7e9e6a;
   --shadow-card: 0 4px 20px rgba(90, 70, 65, 0.08);

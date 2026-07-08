@@ -2,23 +2,32 @@ export const config = {
   rsvpCutoffDate: process.env.RSVP_CUTOFF_DATE || null,
 };
 
-//past cutoff date?
+function parseLocalDate(value: string): Date | null {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value.trim());
+  if (!match) return null;
+  const date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+//past cutoff date? (inclusive)
 export function isRsvpLocked(): boolean {
   if (!config.rsvpCutoffDate) {
     return false;
   }
 
-  const cutoff = new Date(config.rsvpCutoffDate);
-  const now = new Date();
+  const cutoff = parseLocalDate(config.rsvpCutoffDate);
+  if (!cutoff) {
+    console.warn(
+      `[config] RSVP_CUTOFF_DATE "${config.rsvpCutoffDate}" is not a valid YYYY-MM-DD date. RSVPs will not lock.`
+    );
+    return false;
+  }
 
-  // Compare dates only (ignore time)
-  cutoff.setHours(0, 0, 0, 0);
-  const today = new Date(now);
+  const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  return today >= cutoff;
+  return today > cutoff;
 }
-
 
 export function getRsvpSettings() {
   return {

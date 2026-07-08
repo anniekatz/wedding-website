@@ -48,18 +48,33 @@ export function WeddingDataProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    Promise.all([
-      fetch('/api/schedule').then((r) => r.json()),
-      fetch('/api/faqs').then((r) => r.json()),
-      fetch('/api/config').then((r) => r.json()),
+    const fetchJson = async (url: string) => {
+      const r = await fetch(url);
+      if (!r.ok) throw new Error(`${url} responded with ${r.status}`);
+      return r.json();
+    };
+
+    Promise.allSettled([
+      fetchJson('/api/schedule'),
+      fetchJson('/api/faqs'),
+      fetchJson('/api/config'),
     ])
-      .then(([scheduleData, faqsData, configData]) => {
-        setSchedule(scheduleData);
-        setFaqs(faqsData);
-        setEntreeOptions(configData.entreeOptions);
-        setRsvpSettings(configData.rsvp);
+      .then(([scheduleResult, faqsResult, configResult]) => {
+        if (scheduleResult.status === 'fulfilled' && Array.isArray(scheduleResult.value)) {
+          setSchedule(scheduleResult.value);
+        }
+        if (faqsResult.status === 'fulfilled' && Array.isArray(faqsResult.value)) {
+          setFaqs(faqsResult.value);
+        }
+        if (configResult.status === 'fulfilled') {
+          const config = configResult.value;
+          if (Array.isArray(config?.entreeOptions)) setEntreeOptions(config.entreeOptions);
+          if (config?.rsvp) setRsvpSettings(config.rsvp);
+        }
+        for (const result of [scheduleResult, faqsResult, configResult]) {
+          if (result.status === 'rejected') console.error(result.reason);
+        }
       })
-      .catch(console.error)
       .finally(() => setIsLoading(false));
   }, []);
 

@@ -77,7 +77,10 @@ router.get('/dashboard', async (_req: AdminRequest, res: Response) => {
       .from(households)
       .leftJoin(guests, eq(guests.householdId, households.id))
       .groupBy(households.id)
-      .having(sql`SUM(CASE WHEN ${guests.attending} IS NOT NULL THEN 1 ELSE 0 END) = 0`);
+      // some guests answered, some didn't
+      .having(
+        sql`SUM(CASE WHEN ${guests.attending} IS NOT NULL THEN 1 ELSE 0 END) < COUNT(${guests.id})`
+      );
 
     const [logs, guestRows, plusOneRows, noResponse] = await Promise.all([
       db

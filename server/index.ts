@@ -61,13 +61,22 @@ app.use((_req: Request, res: Response, _next: NextFunction) => {
 });
 
 const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
-  console.error('[express] unhandled error:', err);
-  res.status(500).json({ error: 'Internal server error' });
+  const status =
+    typeof err?.status === 'number' && err.status >= 400 && err.status < 500 ? err.status : 500;
+  if (status === 500) {
+    console.error('[express] unhandled error:', err);
+  }
+  res.status(status).json({ error: status === 500 ? 'Internal server error' : 'Invalid request' });
 };
 app.use(errorHandler);
 
-initDb().then(() => {
-  app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+initDb()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`Server running on http://localhost:${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error('[server] failed to initialize database:', err);
+    process.exit(1);
   });
-});

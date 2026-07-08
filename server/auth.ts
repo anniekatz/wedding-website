@@ -28,6 +28,14 @@ function sha256(value: string) {
   return createHash('sha256').update(value).digest('hex');
 }
 
+function safeDecode(value: string): string {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+}
+
 function parseCookies(header: string | undefined): Record<string, string> {
   if (!header) return {};
   const out: Record<string, string> = {};
@@ -36,7 +44,7 @@ function parseCookies(header: string | undefined): Record<string, string> {
     if (idx < 0) continue;
     const k = part.slice(0, idx).trim();
     const v = part.slice(idx + 1).trim();
-    if (k) out[k] = decodeURIComponent(v);
+    if (k) out[k] = safeDecode(v);
   }
   return out;
 }
@@ -136,6 +144,11 @@ const loginAttempts = new Map<string, { count: number; resetAt: number }>();
 export function loginRateLimit(req: Request, res: Response, next: NextFunction) {
   const ip = req.ip ?? req.socket.remoteAddress ?? 'unknown';
   const now = Date.now();
+  if (loginAttempts.size >= 1000) {
+    for (const [key, value] of loginAttempts) {
+      if (value.resetAt < now) loginAttempts.delete(key);
+    }
+  }
   const entry = loginAttempts.get(ip);
   if (!entry || entry.resetAt < now) {
     loginAttempts.set(ip, { count: 1, resetAt: now + LOGIN_WINDOW_MS });

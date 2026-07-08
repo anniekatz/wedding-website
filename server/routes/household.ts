@@ -1,11 +1,15 @@
 import { Router } from 'express';
 import { db, households, guests, plusOnes } from '../db/index.js';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 
 const router = Router();
 
 function normalizeName(name: string): string {
-  return name.toLowerCase().replace(/[^a-z]/g, '');
+  return name
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z]/g, '');
 }
 
 // lookup household
@@ -14,8 +18,9 @@ router.get('/lookup', async (req, res) => {
     const { code, firstName, lastName } = req.query;
 
     if (code) {
+      const inviteCode = String(code).trim().toUpperCase();
       const household = await db.query.households.findFirst({
-        where: eq(households.inviteCode, String(code).toUpperCase()),
+        where: sql`upper(${households.inviteCode}) = ${inviteCode}`,
       });
 
       if (!household) {
@@ -29,9 +34,13 @@ router.get('/lookup', async (req, res) => {
       const normalizedFirst = normalizeName(String(firstName));
       const normalizedLast = normalizeName(String(lastName));
 
+      if (!normalizedFirst || !normalizedLast) {
+        return res.status(404).json({ error: 'Guest not found' });
+      }
+
       const allGuests = await db.query.guests.findMany();
 
-      const guest = allGuests.find(g => {
+      const matches = allGuests.filter(g => {
         if (normalizeName(g.lastName) !== normalizedLast) {
           return false;
         }
@@ -50,11 +59,20 @@ router.get('/lookup', async (req, res) => {
         return false;
       });
 
-      if (!guest) {
+      const householdIds = [...new Set(matches.map(g => g.householdId))];
+
+      if (householdIds.length === 0) {
         return res.status(404).json({ error: 'Guest not found' });
       }
 
-      return res.json({ householdId: guest.householdId });
+      // same name invited in more than one household edge case
+      if (householdIds.length > 1) {
+        return res.status(409).json({
+          error: 'More than one invitation matches that name. Please use your invite code instead.',
+        });
+      }
+
+      return res.json({ householdId: householdIds[0] });
     }
 
     return res.status(400).json({ error: 'Please provide invite code or name' });
@@ -67,7 +85,10 @@ router.get('/lookup', async (req, res) => {
 // get household details
 router.get('/:id', async (req, res) => {
   try {
-    const householdId = parseInt(req.params.id);
+    const householdId = Number(req.params.id);
+    if (!Number.isInteger(householdId) || householdId <= 0) {
+      return res.status(400).json({ error: 'Invalid household id' });
+    }
 
     const household = await db.query.households.findFirst({
       where: eq(households.id, householdId),
@@ -86,9 +107,30 @@ router.get('/:id', async (req, res) => {
     });
 
     return res.json({
-      household,
-      guests: householdGuests,
-      plusOne,
+      household: {
+        id: household.id,
+        name: household.name,
+        allowPlusOne: household.allowPlusOne,
+        reminderEmail: household.reminderEmail,
+      },
+      guests: householdGuests.map(g => ({
+        id: g.id,
+        firstName: g.firstName,
+        lastName: g.lastName,
+        type: g.type,
+        attending: g.attending,
+        comments: g.comments,
+        entreeChoice: g.entreeChoice,
+      })),
+      plusOne: plusOne
+        ? {
+            firstName: plusOne.firstName,
+            lastName: plusOne.lastName,
+            attending: plusOne.attending,
+            comments: plusOne.comments,
+            entreeChoice: plusOne.entreeChoice,
+          }
+        : null,
     });
   } catch (error) {
     console.error('Get household error:', error);
