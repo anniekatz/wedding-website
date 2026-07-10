@@ -12,7 +12,8 @@
     "preview": "vite preview",
     "db:seed": "tsx server/db/seed.ts",
     "db:generate": "drizzle-kit generate",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "start": "tsx server/index.ts"
   },
   "dependencies": {
     "argon2": "^0.44.0",
