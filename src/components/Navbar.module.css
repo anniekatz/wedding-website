@@ -96,6 +96,16 @@
   background: none;
 }
 
+@media (max-width: 600px) {
+  .logo {
+    display: none;
+  }
+
+  .container {
+    justify-content: center;
+  }
+}
+
 @media (max-width: 480px) {
   .links {
     gap: 1.5rem;
@@ -104,9 +114,5 @@
   .link {
     font-size: 0.8rem;
     letter-spacing: 0.08em;
-  }
-
-  .logo {
-    font-size: 1.1rem;
   }
 }
