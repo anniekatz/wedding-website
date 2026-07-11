@@ -69,6 +69,7 @@ export function RSVP() {
   const [showModifyPrompt, setShowModifyPrompt] = useState(false);
 
   const { rsvpSettings, entreeOptions } = useWeddingData();
+  const displayCutoffDate = import.meta.env.VITE_RSVP_CUTOFF_DATE || null;
 
   function getEntreeOptions(guestType: 'adult' | 'child') {
     return entreeOptions.filter(
@@ -231,9 +232,9 @@ export function RSVP() {
           <h2>Thank You!</h2>
           <p>Your RSVP has been submitted successfully.</p>
           <p className={styles.small}>We can't wait to celebrate with you!</p>
-          {rsvpSettings?.cutoffDate && (
+          {displayCutoffDate && (
             <p className={styles.small}>
-              If needed, you may modify your reservation up until {formatDate(rsvpSettings.cutoffDate)}.
+              If needed, you may modify your reservation up until {formatDate(displayCutoffDate)}.
             </p>
           )}
           <div className={styles.successActions}>
@@ -334,12 +335,12 @@ export function RSVP() {
         <h1>RSVP</h1>
         <p>Find your invitation to respond for your party. Please RSVP for every member of your party.</p>
 
-        {rsvpSettings?.cutoffDate && (
-          <div className={rsvpSettings.isLocked ? styles.deadlineNotice + ' ' + styles.locked : styles.deadlineNotice}>
-            {rsvpSettings.isLocked ? (
+        {displayCutoffDate && (
+          <div className={rsvpSettings?.isLocked ? styles.deadlineNotice + ' ' + styles.locked : styles.deadlineNotice}>
+            {rsvpSettings?.isLocked ? (
               <p>RSVPs are now closed. You can still view your reservation below.</p>
             ) : (
-              <p>Please RSVP by <strong>{formatDate(rsvpSettings.cutoffDate)}</strong>.</p>
+              <p>Please RSVP by <strong>{formatDate(displayCutoffDate)}</strong>.</p>
             )}
           </div>
         )}
@@ -440,9 +441,9 @@ export function RSVP() {
         Responding for: <strong>{householdData.household.name}</strong>
       </p>
 
-      {rsvpSettings?.cutoffDate && (
+      {displayCutoffDate && (
         <div className={styles.deadlineNotice}>
-          <p>Please submit your RSVP by <strong>{formatDate(rsvpSettings.cutoffDate)}</strong>.</p>
+          <p>Please submit your RSVP by <strong>{formatDate(displayCutoffDate)}</strong>.</p>
         </div>
       )}
 

@@ -61,8 +61,8 @@ Copy the .env.example to .env and fill in your details.
 # ── Dates ──────────────────────────────────────────────────
 # ISO format: YYYY-MM-DD
 VITE_WEDDING_DATE=2025-10-15
-VITE_RSVP_CUTOFF_DATE=2025-08-15
-RSVP_CUTOFF_DATE=2025-08-15           # must match the line above
+VITE_RSVP_CUTOFF_DATE=2025-08-15      # deadline shown to guests
+RSVP_CUTOFF_DATE=2025-08-16           # when RSVPs actually lock (grace period)
 
 # ── Couple ─────────────────────────────────────────────────
 VITE_PERSON1_FIRST_NAME=Alex          # full first name on home page
@@ -89,7 +89,7 @@ ADMIN_PASSWORD=change-me
 TRUSTED_ORIGINS=http://localhost:5173,http://localhost:3001
 ```
 
-> **Note:** Both `VITE_RSVP_CUTOFF_DATE` and `RSVP_CUTOFF_DATE` values should match. Vite prefix just means it gets embedded in the frontend bundle at build.
+> **Note:** `VITE_RSVP_CUTOFF_DATE` is the deadline displayed to guests (embedded in the frontend bundle at build time), while `RSVP_CUTOFF_DATE` is when the backend actually locks RSVPs. Set the backend date a day (or more) later than the displayed date to give guests a quiet grace period, or set them equal for no grace period.
 
 > **Admin note:** `ADMIN_USERNAME` and `ADMIN_PASSWORD` are only used when the `admin_users` table is empty. After the first admin user is created, changing those env values will not change the saved login. For production, set `NODE_ENV=production` so the admin session cookie uses the secure flag.
 
@@ -247,7 +247,7 @@ Guests can find their invitation two ways:
 
 ### RSVP locking
 
-The `RSVP_CUTOFF_DATE` env variable controls when RSVPs close. The cutoff date itself is inclusive (guests are told "please RSVP by \<date\>", so they can respond through the end of that day). Starting the day after:
+The `RSVP_CUTOFF_DATE` env variable controls when RSVPs actually close on the backend. The deadline guests see ("please RSVP by \<date\>") comes from `VITE_RSVP_CUTOFF_DATE` (which can be set a few days earlier, etc. to build in a grace period if you want).
 - The RSVP form shows a "RSVPs are now closed" message
 - Guests can still look up and view their existing reservation, but can't modify it.
 

@@ -9,7 +9,6 @@ export function Home() {
   const p2 = import.meta.env.VITE_PERSON2_FIRST_NAME;
   const p1Short = import.meta.env.VITE_PERSON1_SHORT_NAME;
   const p2Short = import.meta.env.VITE_PERSON2_SHORT_NAME;
-  const rsvpCutoff = formatDate(import.meta.env.VITE_RSVP_CUTOFF_DATE);
 
   return (
     <div className={`container ${styles.homeContainer}`}>
@@ -29,8 +28,8 @@ export function Home() {
 
       <div className={styles.content}>
         <p className={styles.message}>
-          We're getting married and we want you there!<br />
-          Browse our website to view the event schedule, read through our FAQ, and RSVP. Please RSVP by {rsvpCutoff} so we can finalize the details. See you soon!<br />
+          We're getting married and we want you there!
+          Browse our website to view the event schedule, read through our FAQ, and RSVP. Please RSVP by {import.meta.env.VITE_RSVP_CUTOFF_DATE} so we can finalize the details. See you soon!<br />
           - {p1Short} & {p2Short}
         </p>
 
