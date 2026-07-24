@@ -54,13 +54,16 @@ export const faqs = sqliteTable('faqs', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   question: text('question').notNull(),
   answer: text('answer').notNull(),
+  imagePath: text('image_path'),
   order: integer('order').notNull().default(0),
 });
 
 export const rsvpLogs = sqliteTable('rsvp_logs', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   householdId: integer('household_id').notNull().references(() => households.id),
-  action: text('action', { enum: ['initial_rsvp', 'modification'] }).notNull(),
+  action: text('action', {
+    enum: ['initial_rsvp', 'modification', 'admin_edit', 'admin_clear'],
+  }).notNull(),
   timestamp: text('timestamp').notNull(),
   snapshot: text('snapshot').notNull(),
 });

@@ -1,16 +1,28 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import { getSession, login, logout, type AdminSession } from '../auth-client';
 import { useWeddingData } from '../WeddingDataContext';
+import { ManageHouseholds } from './dashboard/ManageHouseholds';
+import { ManageRsvps } from './dashboard/ManageRsvps';
+import { ManageFaqs } from './dashboard/ManageFaqs';
 import styles from './Dashboard.module.css';
 
 interface RsvpLog {
   id: number;
   householdId: number;
   householdName: string | null;
-  action: 'initial_rsvp' | 'modification';
+  action: 'initial_rsvp' | 'modification' | 'admin_edit' | 'admin_clear';
   timestamp: string;
   snapshot: string;
 }
+
+type TabKey = 'overview' | 'households' | 'rsvps' | 'faqs';
+
+const TAB_LABELS: Array<{ key: TabKey; label: string }> = [
+  { key: 'overview', label: 'Overview' },
+  { key: 'households', label: 'Invited Households' },
+  { key: 'rsvps', label: 'RSVPs' },
+  { key: 'faqs', label: 'FAQs' },
+];
 
 interface AttendingGuest {
   id: number;
@@ -124,8 +136,15 @@ interface SnapshotGuest {
   id?: number;
   firstName?: string;
   lastName?: string;
-  attending?: boolean;
+  attending?: boolean | null;
 }
+
+const ACTION_TAGS: Record<RsvpLog['action'], { label: string; className: string }> = {
+  initial_rsvp: { label: 'Initial', className: styles.tagInitial },
+  modification: { label: 'Modified', className: styles.tagModification },
+  admin_edit: { label: 'Admin edit', className: styles.tagAdmin },
+  admin_clear: { label: 'Admin clear', className: styles.tagAdmin },
+};
 
 interface SnapshotShape {
   guests?: SnapshotGuest[];
@@ -195,6 +214,10 @@ function DashboardView({
   const [loadError, setLoadError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [filter, setFilter] = useState('');
+  const [tab, setTab] = useState<TabKey>('overview');
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
   const { entreeOptions } = useWeddingData();
 
   const fetchDashboard = useCallback(async (): Promise<DashboardData | null> => {
@@ -205,6 +228,7 @@ function DashboardView({
   }, []);
 
   useEffect(() => {
+    if (tab !== 'overview') return;
     let cancelled = false;
     fetchDashboard()
       .then((result) => {
@@ -222,9 +246,13 @@ function DashboardView({
     return () => {
       cancelled = true;
     };
-  }, [fetchDashboard, onSessionExpired]);
+  }, [tab, fetchDashboard, onSessionExpired]);
 
   async function handleRefresh() {
+    if (tab !== 'overview') {
+      setRefreshKey((k) => k + 1);
+      return;
+    }
     setRefreshing(true);
     try {
       const result = await fetchDashboard();
@@ -244,6 +272,37 @@ function DashboardView({
   async function handleSignOut() {
     await logout();
     onSignOut();
+  }
+
+  async function handleExport() {
+    setExporting(true);
+    setExportError(null);
+    try {
+      const r = await fetch('/api/admin/export', { credentials: 'include' });
+      if (r.status === 401) {
+        onSessionExpired();
+        return;
+      }
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const blob = await r.blob();
+
+      const now = new Date();
+      const pad = (n: number) => String(n).padStart(2, '0');
+      const stamp = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `rsvp-export-${stamp}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      setExportError(err instanceof Error ? err.message : 'Export failed');
+    } finally {
+      setExporting(false);
+    }
   }
 
   const entreeLabels = useMemo(
@@ -338,46 +397,17 @@ function DashboardView({
     [data, query]
   );
 
-  if (loadError) {
-    return (
-      <div className={styles.dashboard}>
-        <div className={styles.error}>
-          Failed to load dashboard: {loadError}
-          <button className={styles.retryBtn} onClick={handleRefresh}>
-            Retry
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (!data || !stats) {
-    return (
-      <div className={styles.dashboard}>
-        <div className={styles.loading}>Loading…</div>
-      </div>
-    );
-  }
-
-  return (
-    <div className={styles.dashboard}>
-      <div className={styles.header}>
-        <div>
-          <h1 className={styles.title}>RSVP Dashboard</h1>
-          <p className={styles.userInfo}>
-            Signed in as <strong>{user.username}</strong>
-          </p>
-        </div>
-        <div className={styles.headerActions}>
-          <button className={styles.ghostBtn} onClick={handleRefresh} disabled={refreshing}>
-            {refreshing ? 'Refreshing…' : 'Refresh'}
-          </button>
-          <button className={styles.ghostBtn} onClick={handleSignOut}>
-            Sign out
-          </button>
-        </div>
-      </div>
-
+  const overviewBody = loadError ? (
+    <div className={styles.error}>
+      Failed to load dashboard: {loadError}
+      <button className={styles.retryBtn} onClick={handleRefresh}>
+        Retry
+      </button>
+    </div>
+  ) : !data || !stats ? (
+    <div className={styles.loading}>Loading…</div>
+  ) : (
+    <>
       <div className={styles.statsGrid}>
         <div className={styles.statCard}>
           <span className={styles.statValue}>{data.attending.length}</span>
@@ -596,11 +626,9 @@ function DashboardView({
                       <td>{log.householdName ?? `#${log.householdId}`}</td>
                       <td>
                         <span
-                          className={`${styles.tag} ${
-                            log.action === 'initial_rsvp' ? styles.tagInitial : styles.tagModification
-                          }`}
+                          className={`${styles.tag} ${(ACTION_TAGS[log.action] ?? ACTION_TAGS.modification).className}`}
                         >
-                          {log.action === 'initial_rsvp' ? 'Initial' : 'Modified'}
+                          {(ACTION_TAGS[log.action] ?? ACTION_TAGS.modification).label}
                         </span>
                       </td>
                       <td className={styles.detailsCell}>
@@ -619,6 +647,64 @@ function DashboardView({
           </table>
         </div>
       </section>
+    </>
+  );
+
+  return (
+    <div className={styles.dashboard}>
+      <div className={styles.header}>
+        <div>
+          <h1 className={styles.title}>Admin Dashboard</h1>
+          <p className={styles.userInfo}>
+            Signed in as <strong>{user.username}</strong>
+          </p>
+        </div>
+        <div className={styles.headerActions}>
+          <button className={styles.ghostBtn} onClick={handleExport} disabled={exporting}>
+            {exporting ? 'Exporting…' : 'Export CSV'}
+          </button>
+          <button className={styles.ghostBtn} onClick={handleRefresh} disabled={refreshing}>
+            {refreshing ? 'Refreshing…' : 'Refresh'}
+          </button>
+          <button className={styles.ghostBtn} onClick={handleSignOut}>
+            Sign out
+          </button>
+        </div>
+      </div>
+
+      {exportError && (
+        <div className={`${styles.error} ${styles.exportError}`}>
+          Export failed: {exportError}
+          <button className={styles.retryBtn} onClick={handleExport}>
+            Try again
+          </button>
+        </div>
+      )}
+
+      <div className={styles.tabs}>
+        {TAB_LABELS.map(({ key, label }) => (
+          <button
+            key={key}
+            type="button"
+            className={`${styles.tabBtn} ${tab === key ? styles.tabActive : ''}`}
+            aria-pressed={tab === key}
+            onClick={() => setTab(key)}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {tab === 'overview' && overviewBody}
+      {tab === 'households' && (
+        <ManageHouseholds key={`households-${refreshKey}`} onSessionExpired={onSessionExpired} />
+      )}
+      {tab === 'rsvps' && (
+        <ManageRsvps key={`rsvps-${refreshKey}`} onSessionExpired={onSessionExpired} />
+      )}
+      {tab === 'faqs' && (
+        <ManageFaqs key={`faqs-${refreshKey}`} onSessionExpired={onSessionExpired} />
+      )}
     </div>
   );
 }

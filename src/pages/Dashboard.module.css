@@ -509,6 +509,10 @@
   flex-wrap: wrap;
 }
 
+.exportError {
+  margin-bottom: 1.25rem;
+}
+
 .retryBtn {
   background: transparent;
   border: 1px solid var(--error);
@@ -533,6 +537,450 @@
   font-style: italic;
 }
 
+/* ===== Tabs ===== */
+.tabs {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 2rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.tabBtn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-muted);
+  font-family: 'Cinzel', serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.tabBtn:hover {
+  color: var(--text-primary);
+  background: transparent;
+}
+
+.tabActive {
+  border-color: var(--accent);
+  color: var(--accent-light);
+  background: var(--accent-glow);
+}
+
+.tabExplainer {
+  color: var(--text-muted);
+  font-style: italic;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  max-width: 75ch;
+  margin: 0 0 1.5rem;
+}
+
+.tabExplainer strong {
+  color: var(--text-secondary);
+}
+
+/* ===== Management toolbar ===== */
+.manageToolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.slimBtn {
+  margin-top: 0;
+  padding: 0.6rem 1.1rem;
+  font-size: 0.8rem;
+}
+
+.emptyBlock {
+  padding: 2rem;
+  text-align: center;
+  color: var(--text-muted);
+  font-style: italic;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+}
+
+/* ===== Household / FAQ cards ===== */
+.householdCard {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  box-shadow: var(--shadow-card);
+  margin-bottom: 1.25rem;
+  overflow: hidden;
+}
+
+.householdHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 0.9rem 1rem;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+}
+
+.householdTitleGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.householdName {
+  font-family: 'Cinzel', serif;
+  font-size: 1.05rem;
+  color: var(--text-primary);
+}
+
+.householdNotes {
+  margin: 0;
+  padding: 0.6rem 1rem 0;
+  color: var(--text-muted);
+  font-style: italic;
+  font-size: 0.88rem;
+}
+
+.householdCard .tableWrap {
+  border: none;
+  box-shadow: none;
+  border-radius: 0;
+}
+
+.rowActions {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.smallBtn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-family: 'Cinzel', serif;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.3rem 0.7rem;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+}
+
+.smallBtn:hover {
+  border-color: var(--accent);
+  color: var(--text-primary);
+  background: transparent;
+}
+
+.smallBtnDanger {
+  color: var(--error);
+  border-color: color-mix(in srgb, var(--error) 55%, transparent);
+}
+
+.smallBtnDanger:hover {
+  border-color: var(--error);
+  color: var(--error);
+  background: color-mix(in srgb, var(--error) 10%, transparent);
+}
+
+/* ===== Status tags ===== */
+.tagDone {
+  border-color: var(--accent-dim);
+  background: var(--accent-glow);
+  color: var(--accent-light);
+}
+
+.tagPartial {
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  background: transparent;
+  color: var(--accent-light);
+}
+
+.tagNone {
+  border-color: var(--border);
+  background: transparent;
+  color: var(--text-muted);
+}
+
+.tagAdmin {
+  border-color: color-mix(in srgb, var(--error) 50%, transparent);
+  background: transparent;
+  color: var(--error);
+}
+
+/* ===== RSVP responses column ===== */
+.respLine {
+  display: flex;
+  gap: 0.35rem;
+  align-items: baseline;
+  flex-wrap: wrap;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.respYes {
+  color: var(--accent-light);
+}
+
+.respNo {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* ===== Modals ===== */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 4rem 1rem 2rem;
+  overflow-y: auto;
+  z-index: 1000;
+}
+
+.modal {
+  width: min(640px, 100%);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-top: 2px solid var(--accent);
+  border-radius: 2px;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.modalTitle {
+  margin: 0;
+  font-family: 'Cinzel', serif;
+  font-size: 1.05rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+}
+
+.modalClose {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0.2rem 0.45rem;
+}
+
+.modalClose:hover {
+  color: var(--text-primary);
+  background: transparent;
+}
+
+.modalBody {
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  border-top: 1px solid var(--border);
+}
+
+.modalActions .primaryBtn {
+  margin-top: 0;
+  padding: 0.6rem 1.2rem;
+  font-size: 0.8rem;
+}
+
+.confirmMessage {
+  margin: 0;
+  color: var(--text-secondary);
+  line-height: 1.55;
+}
+
+.warnBox {
+  border: 1px solid color-mix(in srgb, var(--error) 55%, transparent);
+  background: color-mix(in srgb, var(--error) 10%, transparent);
+  color: var(--error);
+  padding: 0.7rem 0.9rem;
+  border-radius: 2px;
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.dangerBtn {
+  padding: 0.6rem 1.2rem;
+  background: var(--error);
+  color: #fff;
+  border: 1px solid var(--error);
+  border-radius: 2px;
+  font-family: 'Cinzel', serif;
+  font-size: 0.8rem;
+  font-weight: 650;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: filter 0.2s ease;
+}
+
+.dangerBtn:hover:not(:disabled) {
+  background: var(--error);
+  filter: brightness(1.12);
+}
+
+.dangerBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ===== Modal forms ===== */
+.formRow2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.9rem;
+}
+
+.fieldHint {
+  margin: 0.15rem 0 0;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  cursor: pointer;
+  padding-top: 0.55rem;
+}
+
+.checkboxLabel input {
+  accent-color: var(--accent);
+}
+
+.textareaControl {
+  resize: vertical;
+  min-height: 110px;
+  font-family: inherit;
+  line-height: 1.5;
+}
+
+.draftCard {
+  border: 1px dashed var(--border);
+  border-radius: 2px;
+  padding: 0.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  margin-bottom: 0.6rem;
+}
+
+.draftFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.draftFooter select {
+  max-width: 160px;
+}
+
+.rsvpGuestRow {
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 0.85rem 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  background: var(--bg-secondary);
+}
+
+.rsvpGuestName {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: 'Cinzel', serif;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+}
+
+/* ===== FAQ management ===== */
+.faqAnswerBlock {
+  padding: 0.85rem 1rem 1rem;
+}
+
+.faqAnswerPreview {
+  margin: 0;
+  color: var(--text-secondary);
+  white-space: pre-wrap;
+  line-height: 1.55;
+  font-size: 0.95rem;
+}
+
+.faqThumb {
+  display: block;
+  margin-top: 0.75rem;
+  max-width: 180px;
+  max-height: 120px;
+  object-fit: cover;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+}
+
+.uploadRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.imagePreview {
+  display: block;
+  max-width: 100%;
+  max-height: 220px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+}
+
+.uploadBtn {
+  display: inline-block;
+  width: fit-content;
+}
+
+.fileInputHidden {
+  display: none;
+}
+
 /* ===== Responsive ===== */
 @media (max-width: 700px) {
   .header {
@@ -550,5 +998,23 @@
 
   .title {
     font-size: 1.8rem;
+  }
+
+  .formRow2 {
+    grid-template-columns: 1fr;
+  }
+
+  .manageToolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .householdHeader {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .modalOverlay {
+    padding: 1.5rem 0.75rem;
   }
 }

@@ -10,6 +10,7 @@ import express, {
 import cors from 'cors';
 import helmet from 'helmet';
 import { initDb } from './db/index.js';
+import { ensureUploadsDir, uploadsDir } from './uploads.js';
 import householdRoutes from './routes/household.js';
 import rsvpRoutes from './routes/rsvp.js';
 import scheduleRoutes from './routes/schedule.js';
@@ -61,6 +62,10 @@ app.use(
 );
 
 app.use(express.json({ limit: '64kb' }));
+
+// faq image attachments
+ensureUploadsDir();
+app.use('/uploads', express.static(uploadsDir));
 
 app.use('/api/household', householdRoutes);
 app.use('/api/rsvp', rsvpRoutes);

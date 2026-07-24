@@ -262,13 +262,29 @@ Every RSVP submission (initial or modification) is logged to the `rsvp_logs` tab
 
 ## Admin Dashboard
 
-The admin dashboard lives at `/dashboard`. It has a username/password login and shows RSVP data:
+The admin dashboard lives at `/dashboard`. It has a username/password login and is split into four tabs:
+
+**Overview** (read-only reporting)
 
 - Headline stats: attending (adults / children / plus-ones), declined, awaiting households, and per-entrée meal counts for the caterer
 - Guests who are attending/declined
 - Households still awaiting a response, including partial responses ("1 of 3 responded")
-- The RSVP activity log with a readable summary of each submission (raw snapshot expandable)
+- The RSVP activity log with a readable summary of each submission (raw snapshot expandable); admin edits/clears show up here tagged as admin actions
 - A search box to filter every table by guest, household, or invite code
+- A button to export rsvp data as csv
+
+**Invited Households** (the invite list)
+
+- Add, edit, and delete invited households / guests
+
+**RSVPs** (what invited households answered)
+
+- Edit/delete existing reservations
+
+**FAQs**
+
+- Add, edit, delete, and reorder the questions shown on the public FAQ page
+- Answers can have an image attached: files are stored in `uploads/`
 
 ## Database Schema
 
@@ -302,3 +318,18 @@ The admin dashboard lives at `/dashboard`. It has a username/password login and 
 | POST   | `/api/admin/logout`          | Sign out and destroy the admin session |
 | GET    | `/api/admin/me`              | Get the current admin session          |
 | GET    | `/api/admin/dashboard`       | Get dashboard RSVP data (admin only)   |
+| GET    | `/api/admin/export`          | Download all RSVP data as CSV (admin only) |
+| GET    | `/api/admin/households`      | List all households with guests and plus ones (admin only) |
+| POST   | `/api/admin/households`      | Create a household, optionally with guests (admin only) |
+| PUT    | `/api/admin/households/:id`  | Update a household (admin only)        |
+| DELETE | `/api/admin/households/:id`  | Delete a household, its guests, plus one, and logs (admin only) |
+| POST   | `/api/admin/households/:id/guests` | Add a guest to a household (admin only) |
+| PUT    | `/api/admin/guests/:id`      | Update a guest's identity fields (admin only) |
+| DELETE | `/api/admin/guests/:id`      | Delete a guest (admin only)            |
+| PUT    | `/api/admin/households/:id/rsvp` | Record or overwrite a household's reservation (admin only) |
+| DELETE | `/api/admin/households/:id/rsvp` | Clear a household's reservation back to "no response" (admin only) |
+| POST   | `/api/admin/faqs`            | Create a FAQ (admin only)              |
+| PUT    | `/api/admin/faqs/:id`        | Update a FAQ (admin only)              |
+| DELETE | `/api/admin/faqs/:id`        | Delete a FAQ and its image (admin only) |
+| POST   | `/api/admin/uploads`         | Upload a FAQ image (raw body, admin only) |
+| GET    | `/uploads/*`                 | Serve uploaded FAQ images              |

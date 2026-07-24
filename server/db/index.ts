@@ -62,6 +62,7 @@ export async function initDb() {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       question TEXT NOT NULL,
       answer TEXT NOT NULL,
+      image_path TEXT,
       "order" INTEGER NOT NULL DEFAULT 0
     );
 
@@ -90,6 +91,12 @@ export async function initDb() {
     CREATE INDEX IF NOT EXISTS idx_admin_sessions_user_id ON admin_sessions(user_id);
     CREATE INDEX IF NOT EXISTS idx_admin_sessions_expires_at ON admin_sessions(expires_at);
   `);
+
+  //images in faq migration
+  const faqColumns = sqlite.prepare('PRAGMA table_info(faqs)').all() as Array<{ name: string }>;
+  if (!faqColumns.some((c) => c.name === 'image_path')) {
+    sqlite.exec('ALTER TABLE faqs ADD COLUMN image_path TEXT');
+  }
 
   // purge sessions that have expired
   sqlite.prepare('DELETE FROM admin_sessions WHERE expires_at < ?').run(Date.now());

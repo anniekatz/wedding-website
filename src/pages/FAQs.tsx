@@ -43,6 +43,14 @@ export function FAQs() {
             <div className={styles.answer}>
               <div className={styles.answerInner}>
                 <p>{faq.answer}</p>
+                {faq.imagePath && (
+                  <img
+                    src={faq.imagePath}
+                    alt=""
+                    className={styles.answerImage}
+                    loading="lazy"
+                  />
+                )}
               </div>
             </div>
           </div>

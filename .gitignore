@@ -74,6 +74,9 @@ web_modules/
 .env.*
 !.env.example
 
+# runtime image uploads
+uploads/
+
 # parcel-bundler cache (https://parceljs.org/)
 .cache
 .parcel-cache

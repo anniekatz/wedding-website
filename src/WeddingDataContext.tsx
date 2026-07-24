@@ -27,6 +27,7 @@ interface FAQ {
   id: number;
   question: string;
   answer: string;
+  imagePath: string | null;
   order: number;
 }
 
