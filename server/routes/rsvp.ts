@@ -129,10 +129,17 @@ router.post('/', async (req, res) => {
       if (rawFirst === INVALID || rawLast === INVALID || comments === INVALID || entreeChoice === INVALID) {
         return res.status(400).json({ error: 'Invalid RSVP submission' });
       }
-      const firstName = rawFirst?.trim();
-      const lastName = rawLast?.trim();
+      let firstName = rawFirst?.trim();
+      let lastName = rawLast?.trim();
+      if (plusOne.attending && !firstName && !lastName) {
+        // both blank==namecard reads "{household} + 1"
+        firstName = household.name;
+        lastName = '+ 1';
+      }
       if (plusOne.attending && (!firstName || !lastName)) {
-        return res.status(400).json({ error: 'Please provide your guest\'s first and last name.' });
+        return res.status(400).json({
+          error: `Please fill in both first and last name. If unsure, leave both boxes blank to have their namecard read "${household.name} + 1".`,
+        });
       }
       if (plusOne.attending && entreeChoice && !isValidEntree(entrees, entreeChoice, 'adult')) {
         return res.status(400).json({ error: 'Invalid entrée selection for your guest.' });

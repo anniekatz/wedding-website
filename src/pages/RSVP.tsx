@@ -129,7 +129,16 @@ export function RSVP() {
           comments: data.plusOne.comments || '',
           entreeChoice: data.plusOne.entreeChoice || '',
         });
-        setBringingPlusOne(data.plusOne.attending);
+        setBringingPlusOne(hasExistingRsvp ? data.plusOne.attending : true);
+      } else if (data.household.allowPlusOne && !hasExistingRsvp) {
+        setPlusOne({
+          firstName: data.household.name,
+          lastName: '+ 1',
+          attending: true,
+          comments: '',
+          entreeChoice: '',
+        });
+        setBringingPlusOne(true);
       }
 
       // reminder email
@@ -159,6 +168,20 @@ export function RSVP() {
     );
   };
 
+  // if left blank, the plus one default to "{household.name} + 1" 
+  const applyPlusOneDefaultName = () => {
+    setPlusOne((p) =>
+      p.firstName.trim() || p.lastName.trim()
+        ? p
+        : { ...p, firstName: householdData!.household.name, lastName: '+ 1' }
+    );
+  };
+
+  const handleBringPlusOne = () => {
+    setBringingPlusOne(true);
+    applyPlusOneDefaultName();
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitError('');
@@ -169,6 +192,24 @@ export function RSVP() {
       if (!guest) continue;
       if (rsvp.attending && !rsvp.entreeChoice && getEntreeOptions(guest.type).length > 0) {
         setSubmitError(`Please select an entree for ${guest.firstName}.`);
+        return;
+      }
+    }
+    let plusOnePayload = { ...plusOne, attending: bringingPlusOne };
+    if (bringingPlusOne) {
+      const first = plusOne.firstName.trim();
+      const last = plusOne.lastName.trim();
+      if (!first && !last) {
+        const defaults = {
+          firstName: householdData!.household.name,
+          lastName: '+ 1',
+        };
+        plusOnePayload = { ...plusOnePayload, ...defaults };
+        setPlusOne((p) => ({ ...p, ...defaults }));
+      } else if (!first || !last) {
+        setSubmitError(
+          `Please fill in both first and last name. If unsure, leave both boxes blank to have their namecard read "${householdData!.household.name} + 1".`
+        );
         return;
       }
     }
@@ -187,7 +228,7 @@ export function RSVP() {
           householdId: householdData!.household.id,
           guests: guestRsvps,
           plusOne: householdData!.household.allowPlusOne
-            ? { ...plusOne, attending: bringingPlusOne }
+            ? plusOnePayload
             : undefined,
           reminderEmail: wantsReminder ? reminderEmail : null,
         }),
@@ -521,14 +562,14 @@ export function RSVP() {
         {householdData.household.allowPlusOne && (
           <div className="card">
             <h3>Plus One</h3>
-            <p className={styles.small}>You are welcome to bring a guest.</p>
+            <p className={styles.small}>You are welcome to bring a guest. Please select "Not Bringing" if you do not intend to bring a Plus One.</p>
 
             <div className={styles.attendingToggle}>
               <button
                 type="button"
                 className={`${styles.attendBtn} ${bringingPlusOne ? styles.yes : ''}`}
                 aria-pressed={bringingPlusOne}
-                onClick={() => setBringingPlusOne(true)}
+                onClick={handleBringPlusOne}
               >
                 Bringing a Guest
               </button>
@@ -544,6 +585,9 @@ export function RSVP() {
 
             {bringingPlusOne && (
               <>
+                <p className={styles.small}>
+                  You can leave the guest name as "{householdData.household.name} + 1" if you're not sure who you're bringing yet.
+                </p>
                 <div className="form-row">
                   <div className="form-group">
                     <label htmlFor="plusOneFirst">Guest First Name</label>
@@ -554,8 +598,8 @@ export function RSVP() {
                       onChange={(e) =>
                         setPlusOne((p) => ({ ...p, firstName: e.target.value }))
                       }
+                      onBlur={applyPlusOneDefaultName}
                       placeholder="First name"
-                      required
                     />
                   </div>
                   <div className="form-group">
@@ -567,8 +611,8 @@ export function RSVP() {
                       onChange={(e) =>
                         setPlusOne((p) => ({ ...p, lastName: e.target.value }))
                       }
+                      onBlur={applyPlusOneDefaultName}
                       placeholder="Last name"
-                      required
                     />
                   </div>
                 </div>

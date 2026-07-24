@@ -3,6 +3,8 @@
 Full-stack wedding website with RSVP management, event schedule, and FAQ pages. Built for my wedding :)
 Built with Typescript, React 19, Vite, NodeJS, Express, Drizzle, and SQLite
 
+Free to use at your own risk
+
 ## Project Structure
 
 ```
