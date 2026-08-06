@@ -26,6 +26,7 @@ export default defineConfig([
         'error',
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
       ],
+      'react-hooks/set-state-in-effect': 'off',
     },
   },
   {

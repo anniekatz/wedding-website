@@ -32,6 +32,24 @@ export interface AdminHousehold {
   plusOne: AdminPlusOne | null;
 }
 
+export interface AdminEntree {
+  id: number;
+  value: string;
+  label: string;
+  availableFor: 'adult' | 'child' | 'both';
+  order: number;
+}
+
+export interface AdminScheduleEvent {
+  id: number;
+  name: string;
+  time: string;
+  endTime: string | null;
+  location: string;
+  description: string | null;
+  order: number;
+}
+
 export interface AdminFaq {
   id: number;
   question: string;

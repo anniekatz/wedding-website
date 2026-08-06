@@ -3,6 +3,8 @@ import { getSession, login, logout, type AdminSession } from '../auth-client';
 import { useWeddingData } from '../WeddingDataContext';
 import { ManageHouseholds } from './dashboard/ManageHouseholds';
 import { ManageRsvps } from './dashboard/ManageRsvps';
+import { ManageEntrees } from './dashboard/ManageEntrees';
+import { ManageSchedule } from './dashboard/ManageSchedule';
 import { ManageFaqs } from './dashboard/ManageFaqs';
 import styles from './Dashboard.module.css';
 
@@ -15,12 +17,14 @@ interface RsvpLog {
   snapshot: string;
 }
 
-type TabKey = 'overview' | 'households' | 'rsvps' | 'faqs';
+type TabKey = 'overview' | 'households' | 'rsvps' | 'entrees' | 'schedule' | 'faqs';
 
 const TAB_LABELS: Array<{ key: TabKey; label: string }> = [
   { key: 'overview', label: 'Overview' },
   { key: 'households', label: 'Invited Households' },
   { key: 'rsvps', label: 'RSVPs' },
+  { key: 'entrees', label: 'Entrées' },
+  { key: 'schedule', label: 'Schedule' },
   { key: 'faqs', label: 'FAQs' },
 ];
 
@@ -701,6 +705,12 @@ function DashboardView({
       )}
       {tab === 'rsvps' && (
         <ManageRsvps key={`rsvps-${refreshKey}`} onSessionExpired={onSessionExpired} />
+      )}
+      {tab === 'entrees' && (
+        <ManageEntrees key={`entrees-${refreshKey}`} onSessionExpired={onSessionExpired} />
+      )}
+      {tab === 'schedule' && (
+        <ManageSchedule key={`schedule-${refreshKey}`} onSessionExpired={onSessionExpired} />
       )}
       {tab === 'faqs' && (
         <ManageFaqs key={`faqs-${refreshKey}`} onSessionExpired={onSessionExpired} />

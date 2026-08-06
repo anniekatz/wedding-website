@@ -2,7 +2,7 @@ import express, { Router, type Request, type Response } from 'express';
 import { randomBytes } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
-import { eq, desc, sql } from 'drizzle-orm';
+import { asc, eq, desc, inArray, sql } from 'drizzle-orm';
 import {
   SESSION_COOKIE,
   createSession,
@@ -15,7 +15,17 @@ import {
   verifyCredentials,
   type AdminRequest,
 } from '../auth.js';
-import { db, guests, households, rsvpLogs, plusOnes, faqs, type EntreeOption } from '../db/index.js';
+import {
+  db,
+  guests,
+  households,
+  rsvpLogs,
+  plusOnes,
+  faqs,
+  entreeOptions,
+  scheduleEvents,
+  type EntreeOption,
+} from '../db/index.js';
 import {
   deleteUploadedFile,
   ensureUploadsDir,
@@ -805,6 +815,318 @@ router.delete('/faqs/:id', async (req: AdminRequest, res: Response) => {
     return res.json({ success: true });
   } catch (err) {
     console.error('[admin] delete faq failed:', err);
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
+const MAX_LOCATION_LENGTH = 200;
+const MAX_EVENT_DESCRIPTION_LENGTH = 500;
+const EVENT_TIME_RE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?$/;
+
+// schedule times iso stirngs
+function parseEventTime(value: unknown): string | null | typeof INVALID {
+  if (value === undefined || value === null || value === '') return null;
+  if (typeof value !== 'string') return INVALID;
+  const trimmed = value.trim();
+  if (!EVENT_TIME_RE.test(trimmed)) return INVALID;
+  const normalized = trimmed.length === 16 ? `${trimmed}:00` : trimmed;
+  if (Number.isNaN(new Date(normalized).getTime())) return INVALID;
+  return normalized;
+}
+
+interface ScheduleEventInput {
+  name: string;
+  location: string;
+  time: string;
+  endTime: string | null;
+  description: string | null;
+}
+
+function parseScheduleEventInput(value: unknown): ScheduleEventInput | { error: string } {
+  if (!value || typeof value !== 'object') return { error: 'Invalid event details.' };
+  const raw = value as Record<string, unknown>;
+  const name = requiredString(raw.name, MAX_NAME_LENGTH);
+  if (name === INVALID) return { error: 'Event name is required.' };
+  const location = requiredString(raw.location, MAX_LOCATION_LENGTH);
+  if (location === INVALID) return { error: 'Location is required.' };
+  const time = parseEventTime(raw.time);
+  if (time === INVALID || time === null) {
+    return { error: 'A valid start time is required (date and time).' };
+  }
+  const endTime = parseEventTime(raw.endTime);
+  if (endTime === INVALID) return { error: 'Invalid end time.' };
+  if (endTime && endTime <= time) return { error: 'End time must be after the start time.' };
+  const description = optionalString(raw.description, MAX_EVENT_DESCRIPTION_LENGTH);
+  if (description === INVALID) return { error: 'Invalid event details.' };
+  return { name, location, time, endTime, description: description?.trim() || null };
+}
+
+router.post('/schedule', async (req: AdminRequest, res: Response) => {
+  try {
+    const parsed = parseScheduleEventInput(req.body);
+    if ('error' in parsed) return res.status(400).json({ error: parsed.error });
+
+    const raw = (req.body ?? {}) as Record<string, unknown>;
+    let order: number;
+    if (raw.order === undefined || raw.order === null) {
+      const [{ maxOrder }] = await db
+        .select({ maxOrder: sql<number>`COALESCE(MAX("order"), 0)` })
+        .from(scheduleEvents);
+      order = maxOrder + 1;
+    } else if (typeof raw.order === 'number' && Number.isInteger(raw.order)) {
+      order = raw.order;
+    } else {
+      return res.status(400).json({ error: 'Order must be a whole number.' });
+    }
+
+    const [created] = await db
+      .insert(scheduleEvents)
+      .values({ ...parsed, order })
+      .returning();
+    return res.status(201).json(created);
+  } catch (err) {
+    console.error('[admin] create schedule event failed:', err);
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
+router.put('/schedule/:id', async (req: AdminRequest, res: Response) => {
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id) || id <= 0) return res.status(400).json({ error: 'Invalid event id' });
+    const existing = await db.query.scheduleEvents.findFirst({ where: eq(scheduleEvents.id, id) });
+    if (!existing) return res.status(404).json({ error: 'Event not found' });
+
+    const parsed = parseScheduleEventInput(req.body);
+    if ('error' in parsed) return res.status(400).json({ error: parsed.error });
+
+    const raw = (req.body ?? {}) as Record<string, unknown>;
+    let order = existing.order;
+    if (raw.order !== undefined && raw.order !== null) {
+      if (typeof raw.order !== 'number' || !Number.isInteger(raw.order)) {
+        return res.status(400).json({ error: 'Order must be a whole number.' });
+      }
+      order = raw.order;
+    }
+
+    await db
+      .update(scheduleEvents)
+      .set({ ...parsed, order })
+      .where(eq(scheduleEvents.id, id));
+    return res.json({ success: true });
+  } catch (err) {
+    console.error('[admin] update schedule event failed:', err);
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
+router.delete('/schedule/:id', async (req: AdminRequest, res: Response) => {
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id) || id <= 0) return res.status(400).json({ error: 'Invalid event id' });
+    const existing = await db.query.scheduleEvents.findFirst({ where: eq(scheduleEvents.id, id) });
+    if (!existing) return res.status(404).json({ error: 'Event not found' });
+
+    await db.delete(scheduleEvents).where(eq(scheduleEvents.id, id));
+    return res.json({ success: true });
+  } catch (err) {
+    console.error('[admin] delete schedule event failed:', err);
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
+const ENTREE_VALUE_RE = /^[a-z0-9]{1,64}$/;
+
+class StaleEntreeSelectionError extends Error {}
+
+router.get('/entrees', async (_req: AdminRequest, res: Response) => {
+  try {
+    const entrees = await db.query.entreeOptions.findMany({
+      orderBy: [asc(entreeOptions.order)],
+    });
+    return res.json(entrees);
+  } catch (err) {
+    console.error('[admin] entrees query failed:', err);
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
+router.put('/entrees', async (req: AdminRequest, res: Response) => {
+  try {
+    const raw = (req.body ?? {}) as Record<string, unknown>;
+    if (
+      !Array.isArray(raw.additions) ||
+      !Array.isArray(raw.removals) ||
+      !Array.isArray(raw.reassignments)
+    ) {
+      return res.status(400).json({ error: 'Invalid entree update.' });
+    }
+
+    const additions: Array<{ value: string; label: string; availableFor: 'adult' | 'child' | 'both' }> = [];
+    for (const entry of raw.additions) {
+      if (!entry || typeof entry !== 'object') {
+        return res.status(400).json({ error: 'Invalid entree update.' });
+      }
+      const e = entry as Record<string, unknown>;
+      const label = requiredString(e.label, MAX_NAME_LENGTH);
+      if (label === INVALID) return res.status(400).json({ error: 'Each new entree needs a name.' });
+      if (typeof e.value !== 'string' || !ENTREE_VALUE_RE.test(e.value)) {
+        return res.status(400).json({ error: 'Invalid entree update.' });
+      }
+      if (e.availableFor !== 'adult' && e.availableFor !== 'child' && e.availableFor !== 'both') {
+        return res.status(400).json({ error: 'Invalid entree update.' });
+      }
+      additions.push({
+        value: e.value,
+        label,
+        availableFor: e.availableFor as 'adult' | 'child' | 'both',
+      });
+    }
+
+    const removalIds = new Set<number>();
+    for (const entry of raw.removals) {
+      if (!Number.isInteger(entry) || (entry as number) <= 0) {
+        return res.status(400).json({ error: 'Invalid entree update.' });
+      }
+      removalIds.add(entry as number);
+    }
+
+    if (additions.length === 0 && removalIds.size === 0) {
+      return res.status(400).json({ error: 'Nothing to save.' });
+    }
+
+    const guestReassign = new Map<number, string>();
+    const plusOneReassign = new Map<number, string>();
+    for (const entry of raw.reassignments) {
+      if (!entry || typeof entry !== 'object') {
+        return res.status(400).json({ error: 'Invalid entree update.' });
+      }
+      const e = entry as Record<string, unknown>;
+      const choice = requiredString(e.entreeChoice, MAX_NAME_LENGTH);
+      if ((e.kind !== 'guest' && e.kind !== 'plusOne') || !Number.isInteger(e.id) || choice === INVALID) {
+        return res.status(400).json({ error: 'Invalid entree update.' });
+      }
+      const map = e.kind === 'guest' ? guestReassign : plusOneReassign;
+      if (map.has(e.id as number)) {
+        return res.status(400).json({ error: 'Invalid entree update.' });
+      }
+      map.set(e.id as number, choice);
+    }
+
+    const current = await db.query.entreeOptions.findMany();
+    const currentById = new Map(current.map((e) => [e.id, e]));
+    for (const id of removalIds) {
+      if (!currentById.has(id)) {
+        return res
+          .status(409)
+          .json({ error: 'One of the removed entrees no longer exists. Refresh and try again.' });
+      }
+    }
+
+    const remaining = current.filter((e) => !removalIds.has(e.id));
+    const takenValues = new Set(remaining.map((e) => e.value.toLowerCase()));
+    for (const a of additions) {
+      if (takenValues.has(a.value.toLowerCase())) {
+        return res.status(409).json({ error: `An entree named "${a.label}" already exists.` });
+      }
+      takenValues.add(a.value.toLowerCase());
+    }
+
+    const removedValues = new Set(current.filter((e) => removalIds.has(e.id)).map((e) => e.value));
+
+    const optionByValue = new Map<string, { availableFor: 'adult' | 'child' | 'both' }>();
+    for (const e of remaining) optionByValue.set(e.value, e);
+    for (const a of additions) optionByValue.set(a.value, a);
+    const allowedFor = (value: string, type: 'adult' | 'child') => {
+      const option = optionByValue.get(value);
+      return !!option && (option.availableFor === 'both' || option.availableFor === type);
+    };
+
+    const [allGuests, allPlusOnes] = await Promise.all([
+      db.query.guests.findMany(),
+      db.query.plusOnes.findMany(),
+    ]);
+    const affectedGuests = allGuests.filter((g) => g.entreeChoice && removedValues.has(g.entreeChoice));
+    const affectedPlusOnes = allPlusOnes.filter(
+      (p) => p.entreeChoice && removedValues.has(p.entreeChoice)
+    );
+
+    const affectedGuestIds = new Set(affectedGuests.map((g) => g.id));
+    const affectedPlusOneIds = new Set(affectedPlusOnes.map((p) => p.id));
+    for (const id of guestReassign.keys()) {
+      if (!affectedGuestIds.has(id)) return res.status(400).json({ error: 'Invalid entree update.' });
+    }
+    for (const id of plusOneReassign.keys()) {
+      if (!affectedPlusOneIds.has(id)) return res.status(400).json({ error: 'Invalid entree update.' });
+    }
+
+    const missing: string[] = [];
+    for (const g of affectedGuests) {
+      const choice = guestReassign.get(g.id);
+      if (!choice) {
+        missing.push(`${g.firstName} ${g.lastName}`);
+      } else if (!allowedFor(choice, g.type)) {
+        return res
+          .status(400)
+          .json({ error: `Invalid replacement entree for ${g.firstName} ${g.lastName}.` });
+      }
+    }
+    for (const p of affectedPlusOnes) {
+      const choice = plusOneReassign.get(p.id);
+      if (!choice) {
+        missing.push(`${p.firstName} ${p.lastName} (plus one)`);
+      } else if (!allowedFor(choice, 'adult')) {
+        return res
+          .status(400)
+          .json({ error: `Invalid replacement entree for ${p.firstName} ${p.lastName}.` });
+      }
+    }
+    if (missing.length > 0) {
+      return res
+        .status(409)
+        .json({ error: `A replacement entree is still needed for: ${missing.join(', ')}.` });
+    }
+
+    let nextOrder = remaining.reduce((max, e) => Math.max(max, e.order), 0);
+
+    db.transaction((tx) => {
+      for (const [guestId, choice] of guestReassign) {
+        tx.update(guests).set({ entreeChoice: choice }).where(eq(guests.id, guestId)).run();
+      }
+      for (const [plusOneId, choice] of plusOneReassign) {
+        tx.update(plusOnes).set({ entreeChoice: choice }).where(eq(plusOnes.id, plusOneId)).run();
+      }
+      if (removalIds.size > 0) {
+        tx.delete(entreeOptions).where(inArray(entreeOptions.id, [...removalIds])).run();
+      }
+      for (const a of additions) {
+        nextOrder += 1;
+        tx.insert(entreeOptions).values({ ...a, order: nextOrder }).run();
+      }
+      if (removedValues.size > 0) {
+        const values = [...removedValues];
+        const stillSelected =
+          (tx
+            .select({ n: sql<number>`COUNT(*)` })
+            .from(guests)
+            .where(inArray(guests.entreeChoice, values))
+            .get()?.n ?? 0) +
+          (tx
+            .select({ n: sql<number>`COUNT(*)` })
+            .from(plusOnes)
+            .where(inArray(plusOnes.entreeChoice, values))
+            .get()?.n ?? 0);
+        if (stillSelected > 0) throw new StaleEntreeSelectionError();
+      }
+    });
+    return res.json({ success: true });
+  } catch (err) {
+    if (err instanceof StaleEntreeSelectionError) {
+      return res.status(409).json({
+        error: 'A guest just submitted an RSVP with one of the removed entrees. Refresh and try again.',
+      });
+    }
+    console.error('[admin] update entrees failed:', err);
     return res.status(500).json({ error: 'Server error' });
   }
 });
