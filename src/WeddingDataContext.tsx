@@ -11,6 +11,7 @@ interface EntreeOption {
 interface RsvpSettings {
   cutoffDate: string | null;
   isLocked: boolean;
+  codeLookupEnabled: boolean;
 }
 
 interface ScheduleEvent {

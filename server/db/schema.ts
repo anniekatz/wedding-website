@@ -68,6 +68,11 @@ export const rsvpLogs = sqliteTable('rsvp_logs', {
   snapshot: text('snapshot').notNull(),
 });
 
+export const appSettings = sqliteTable('app_settings', {
+  key: text('key').primaryKey(),
+  value: text('value').notNull(),
+});
+
 export const adminUsers = sqliteTable('admin_users', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   username: text('username').notNull().unique(),
@@ -96,6 +101,8 @@ export type EntreeOption = typeof entreeOptions.$inferSelect;
 export type NewEntreeOption = typeof entreeOptions.$inferInsert;
 export type Faq = typeof faqs.$inferSelect;
 export type NewFaq = typeof faqs.$inferInsert;
+export type AppSetting = typeof appSettings.$inferSelect;
+export type NewAppSetting = typeof appSettings.$inferInsert;
 export type AdminUser = typeof adminUsers.$inferSelect;
 export type NewAdminUser = typeof adminUsers.$inferInsert;
 export type AdminSession = typeof adminSessions.$inferSelect;

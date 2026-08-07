@@ -50,6 +50,10 @@ export interface AdminScheduleEvent {
   order: number;
 }
 
+export interface AdminSettings {
+  codeLookupEnabled: boolean;
+}
+
 export interface AdminFaq {
   id: number;
   question: string;

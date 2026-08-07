@@ -32,6 +32,7 @@ import {
   uploadsDir,
   uploadsFileFromPublicPath,
 } from '../uploads.js';
+import { isCodeLookupEnabled, setCodeLookupEnabled } from '../settings.js';
 
 const router = Router();
 const isProd = process.env.NODE_ENV === 'production';
@@ -78,6 +79,29 @@ router.get('/me', async (req: Request, res: Response) => {
 });
 
 router.use(requireAdmin);
+
+router.get('/settings', async (_req: AdminRequest, res: Response) => {
+  try {
+    return res.json({ codeLookupEnabled: await isCodeLookupEnabled() });
+  } catch (err) {
+    console.error('[admin] settings query failed:', err);
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
+router.put('/settings', async (req: AdminRequest, res: Response) => {
+  try {
+    const raw = (req.body ?? {}) as Record<string, unknown>;
+    if (typeof raw.codeLookupEnabled !== 'boolean') {
+      return res.status(400).json({ error: 'Invalid settings.' });
+    }
+    await setCodeLookupEnabled(raw.codeLookupEnabled);
+    return res.json({ codeLookupEnabled: raw.codeLookupEnabled });
+  } catch (err) {
+    console.error('[admin] update settings failed:', err);
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
 
 router.get('/dashboard', async (_req: AdminRequest, res: Response) => {
   try {

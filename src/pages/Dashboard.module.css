@@ -981,6 +981,29 @@
   display: none;
 }
 
+/* ===== Site settings ===== */
+.settingsCard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0) 35%),
+    var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 1rem 1.4rem 1.1rem;
+  box-shadow: var(--shadow-card);
+}
+
+.settingsCard .checkboxLabel {
+  padding-top: 0;
+  width: fit-content;
+}
+
+.settingsCard .checkboxLabel input:disabled {
+  cursor: default;
+}
+
 /* ===== Responsive ===== */
 @media (max-width: 700px) {
   .header {

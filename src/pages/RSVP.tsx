@@ -71,6 +71,10 @@ export function RSVP() {
   const { rsvpSettings, entreeOptions } = useWeddingData();
   const displayCutoffDate = import.meta.env.VITE_RSVP_CUTOFF_DATE || null;
 
+  //admins can disable invite code lookup
+  const allowCodeLookup = rsvpSettings?.codeLookupEnabled ?? true;
+  const activeLookupType = allowCodeLookup ? lookupType : 'name';
+
   function getEntreeOptions(guestType: 'adult' | 'child') {
     return entreeOptions.filter(
       (o) => o.availableFor === 'both' || o.availableFor === guestType,
@@ -84,7 +88,7 @@ export function RSVP() {
 
     try {
       const params = new URLSearchParams();
-      if (lookupType === 'code') {
+      if (activeLookupType === 'code') {
         params.set('code', inviteCode.trim());
       } else {
         params.set('firstName', firstName.trim());
@@ -379,34 +383,36 @@ export function RSVP() {
         {displayCutoffDate && (
           <div className={rsvpSettings?.isLocked ? styles.deadlineNotice + ' ' + styles.locked : styles.deadlineNotice}>
             {rsvpSettings?.isLocked ? (
-              <p>RSVPs are now closed. You can still view your reservation below.</p>
+              <p>RSVPs are now closed. You can still view your reservation below if you made one.</p>
             ) : (
               <p>Please RSVP by <strong>{formatDate(displayCutoffDate)}</strong>.</p>
             )}
           </div>
         )}
 
-        <div className={styles.lookupToggle}>
-          <button
-            type="button"
-            className={`${styles.toggleBtn} ${lookupType === 'name' ? styles.active : ''}`}
-            aria-pressed={lookupType === 'name'}
-            onClick={() => setLookupType('name')}
-          >
-            Search by Name
-          </button>
-          <button
-            type="button"
-            className={`${styles.toggleBtn} ${lookupType === 'code' ? styles.active : ''}`}
-            aria-pressed={lookupType === 'code'}
-            onClick={() => setLookupType('code')}
-          >
-            Enter Code
-          </button>
-        </div>
+        {allowCodeLookup && (
+          <div className={styles.lookupToggle}>
+            <button
+              type="button"
+              className={`${styles.toggleBtn} ${lookupType === 'name' ? styles.active : ''}`}
+              aria-pressed={lookupType === 'name'}
+              onClick={() => setLookupType('name')}
+            >
+              Search by Name
+            </button>
+            <button
+              type="button"
+              className={`${styles.toggleBtn} ${lookupType === 'code' ? styles.active : ''}`}
+              aria-pressed={lookupType === 'code'}
+              onClick={() => setLookupType('code')}
+            >
+              Enter Code
+            </button>
+          </div>
+        )}
 
         <form onSubmit={handleLookup} className="card">
-          {lookupType === 'code' ? (
+          {activeLookupType === 'code' ? (
             <div className="form-group">
               <label htmlFor="code">Invitation Code</label>
               <input

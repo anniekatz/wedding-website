@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { db, households, guests, plusOnes } from '../db/index.js';
 import { eq, sql } from 'drizzle-orm';
+import { isCodeLookupEnabled } from '../settings.js';
 
 const router = Router();
 
@@ -18,6 +19,12 @@ router.get('/lookup', async (req, res) => {
     const { code, firstName, lastName } = req.query;
 
     if (code) {
+      if (!(await isCodeLookupEnabled())) {
+        return res.status(403).json({
+          error: 'Invite code lookup is turned off. Please search by your first and last name.',
+        });
+      }
+
       const inviteCode = String(code).trim().toUpperCase();
       const household = await db.query.households.findFirst({
         where: sql`upper(${households.inviteCode}) = ${inviteCode}`,
@@ -68,7 +75,9 @@ router.get('/lookup', async (req, res) => {
       // same name invited in more than one household edge case
       if (householdIds.length > 1) {
         return res.status(409).json({
-          error: 'More than one invitation matches that name. Please use your invite code instead.',
+          error: (await isCodeLookupEnabled())
+            ? 'More than one invitation matches that name. Please use your invite code instead.'
+            : 'More than one invitation matches that name. Please contact us so we can help you find your invitation.',
         });
       }
 

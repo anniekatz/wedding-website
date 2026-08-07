@@ -1,6 +1,12 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import { getSession, login, logout, type AdminSession } from '../auth-client';
 import { useWeddingData } from '../WeddingDataContext';
+import {
+  adminFetch,
+  jsonInit,
+  SessionExpiredError,
+  type AdminSettings,
+} from './dashboard/adminApi';
 import { ManageHouseholds } from './dashboard/ManageHouseholds';
 import { ManageRsvps } from './dashboard/ManageRsvps';
 import { ManageEntrees } from './dashboard/ManageEntrees';
@@ -202,6 +208,84 @@ function GuestTypeTag({ guest }: { guest: AttendingGuest }) {
     <span className={`${styles.tag} ${guest.type === 'child' ? styles.tagChild : styles.tagAdult}`}>
       {guest.type}
     </span>
+  );
+}
+
+function RsvpPageSettings({ onSessionExpired }: { onSessionExpired: () => void }) {
+  const [settings, setSettings] = useState<AdminSettings | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    try {
+      setSettings(await adminFetch<AdminSettings>('/api/admin/settings'));
+      setError(null);
+    } catch (err) {
+      if (err instanceof SessionExpiredError) {
+        onSessionExpired();
+        return;
+      }
+      setError(err instanceof Error ? err.message : 'Request failed');
+    }
+  }, [onSessionExpired]);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  async function handleToggle(codeLookupEnabled: boolean) {
+    const previous = settings;
+    setSettings({ codeLookupEnabled });
+    setSaving(true);
+    setError(null);
+    try {
+      await adminFetch('/api/admin/settings', jsonInit('PUT', { codeLookupEnabled }));
+    } catch (err) {
+      setSettings(previous);
+      if (err instanceof SessionExpiredError) {
+        onSessionExpired();
+        return;
+      }
+      setError(err instanceof Error ? err.message : 'Request failed');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <section className={styles.section}>
+      <h2 className={styles.sectionTitle}>RSVP Page Settings</h2>
+      <div className={styles.settingsCard}>
+        {!settings && !error && <span className={styles.muted}>Loading…</span>}
+        {settings && (
+          <>
+            <label className={styles.checkboxLabel}>
+              <input
+                type="checkbox"
+                checked={settings.codeLookupEnabled}
+                disabled={saving}
+                onChange={(e) => void handleToggle(e.target.checked)}
+              />
+              <span>Allow guests to find their invitation with an invite code</span>
+            </label>
+            <p className={styles.fieldHint}>
+              When unchecked, the "Enter Code" option is removed from the RSVP page, making it so guests can
+              only search by first and last name.
+            </p>
+          </>
+        )}
+        {error && (
+          <div className={styles.error}>
+            {error}
+            {!settings && (
+              <button className={styles.retryBtn} onClick={() => void load()}>
+                Retry
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+    </section>
   );
 }
 
@@ -699,7 +783,12 @@ function DashboardView({
         ))}
       </div>
 
-      {tab === 'overview' && overviewBody}
+      {tab === 'overview' && (
+        <>
+          <RsvpPageSettings onSessionExpired={onSessionExpired} />
+          {overviewBody}
+        </>
+      )}
       {tab === 'households' && (
         <ManageHouseholds key={`households-${refreshKey}`} onSessionExpired={onSessionExpired} />
       )}
