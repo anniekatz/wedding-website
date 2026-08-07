@@ -90,3 +90,27 @@
   margin: 0;
   color: var(--text-secondary);
 }
+
+/* extreme mobile zoom*/
+@media (max-width: 19em) {
+  .question {
+    padding: 1rem 0.75rem;
+  }
+
+  .icon {
+    margin-left: 0.5rem;
+  }
+
+  .answerInner p {
+    padding: 0.5rem 0.75rem 1rem;
+  }
+
+  .answerImage {
+    margin: 0 0.75rem 1rem;
+    max-width: min(100% - 1.5rem, 480px);
+  }
+
+  .contact {
+    padding: 1.25rem 0.75rem;
+  }
+}

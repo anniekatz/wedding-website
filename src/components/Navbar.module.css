@@ -8,12 +8,14 @@
 }
 
 .container {
-  max-width: 800px;
+  max-width: 43.478rem; 
   margin: 0 auto;
   padding: 0 1.5rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  row-gap: 0.5rem;
 }
 
 .logo {
@@ -39,7 +41,9 @@
 
 .links {
   display: flex;
-  gap: 2.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.25rem 2.5rem;
 }
 
 .link {
@@ -96,7 +100,7 @@
   background: none;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 37.5em) {
   .logo {
     display: none;
   }
@@ -106,13 +110,23 @@
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 30em) {
   .links {
-    gap: 1.5rem;
+    gap: 0.25rem 1.5rem;
   }
 
   .link {
     font-size: 0.8rem;
     letter-spacing: 0.08em;
+  }
+}
+
+@media (max-width: 19em) {
+  .navbar {
+    position: static;
+  }
+
+  .container {
+    padding: 0 0.75rem;
   }
 }

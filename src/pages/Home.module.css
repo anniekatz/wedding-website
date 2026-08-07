@@ -85,7 +85,7 @@
 
 .content {
   text-align: center;
-  max-width: 560px;
+  max-width: 30.435rem; 
   margin: 0 auto 3rem;
 }
 
@@ -196,14 +196,14 @@
   transition: color 0.3s ease;
 }
 
-@media (max-width: 1200px) {
+@media (max-width: 75em) {
   .cherubLeft,
   .cherubRight {
     display: none;
   }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 37.5em) {
   .names {
     font-size: 2.25rem;
   }
@@ -223,5 +223,20 @@
   .actionButton {
     padding: 0.85rem 1.75rem;
     font-size: 0.85rem;
+  }
+}
+
+/* extreme zoom */
+@media (max-width: 19em) {
+  .names {
+    font-size: 1.9rem;
+  }
+
+  .ampersand {
+    font-size: 1.5rem;
+  }
+
+  .detailCard {
+    padding: 1.25rem 0.75rem;
   }
 }

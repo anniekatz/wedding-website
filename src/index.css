@@ -71,6 +71,13 @@ body {
   margin: 0;
   min-height: 100vh;
   background-color: var(--bg-primary);
+  overflow-wrap: break-word;
+}
+
+img,
+svg,
+video {
+  max-width: 100%;
 }
 
 #root {
@@ -112,7 +119,7 @@ h3 {
   letter-spacing: 0.03em;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 37.5em) {
   h1 {
     font-size: 2.2rem;
   }
@@ -218,7 +225,7 @@ button.secondary:hover,
 
 .container {
   width: 100%;
-  max-width: 800px;
+  max-width: 43.478rem; 
   margin: 0 auto;
   padding: 0 1.5rem;
 }
@@ -257,7 +264,7 @@ button.secondary:hover,
   gap: 1rem;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 37.5em) {
   .form-row {
     grid-template-columns: 1fr;
   }
@@ -287,4 +294,29 @@ button.secondary:hover,
 
 .mb-2 {
   margin-bottom: 2rem;
+}
+
+/*extreme zoom*/
+@media (max-width: 19em) {
+  h1 {
+    font-size: 1.9rem;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+  }
+
+  .container {
+    padding: 0 0.75rem;
+  }
+
+  .card {
+    padding: 1.25rem 0.75rem;
+  }
+
+  button,
+  .button {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
 }

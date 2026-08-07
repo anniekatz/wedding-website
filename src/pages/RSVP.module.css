@@ -1,5 +1,6 @@
 .lookupToggle {
   display: flex;
+  flex-wrap: wrap;
   gap: 0;
   margin-bottom: 1.75rem;
   border: 1px solid var(--border);
@@ -8,6 +9,7 @@
 }
 
 .toggleBtn {
+  flex: 1 1 auto;
   padding: 0.7rem 1.25rem;
   border: none;
   color: var(--text-secondary);
@@ -142,6 +144,7 @@
 
 .formActions {
   display: flex;
+  flex-wrap: wrap;
   gap: 1rem;
   justify-content: flex-end;
   margin-top: 1.5rem;
@@ -152,13 +155,13 @@
   padding: 3rem 1.25rem;
   background: var(--bg-card);
   border: 1px solid var(--border);
-  max-width: 500px;
+  max-width: 27.174rem; 
   margin: 0 auto;
 }
 
 .checkmark {
-  width: 64px;
-  height: 64px;
+  width: 3.478rem; 
+  height: 3.478rem;
   background: transparent;
   border: 1px solid var(--accent);
   color: var(--accent);
@@ -185,12 +188,13 @@
 
 .successActions {
   display: flex;
+  flex-wrap: wrap;
   gap: 1rem;
   justify-content: center;
   margin-top: 1.75rem;
 }
 
-@media (max-width: 480px) {
+@media (max-width: 30em) {
   .entreeBtn {
     min-width: 100%;
   }
@@ -222,7 +226,7 @@
   padding: 2rem;
   background: var(--bg-card);
   border: 1px solid var(--border);
-  max-width: 600px;
+  max-width: 32.609rem;
   margin: 0 auto;
 }
 
@@ -269,6 +273,7 @@
 
 .summaryItem {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.5rem;
   padding: 0.4rem 0;
@@ -301,12 +306,13 @@
 
 .modifyActions {
   display: flex;
+  flex-wrap: wrap;
   gap: 1rem;
   justify-content: center;
   margin-top: 1.75rem;
 }
 
-@media (max-width: 480px) {
+@media (max-width: 30em) {
   .modifyActions {
     flex-direction: column-reverse;
   }
@@ -373,4 +379,28 @@
 
 .reminderSection :global(.form-group) {
   margin-top: 1rem;
+}
+
+/* Extreme zoom */
+@media (max-width: 19em) {
+  .successCard {
+    padding: 2rem 0.75rem;
+  }
+
+  .modifyCard {
+    padding: 1.25rem 0.75rem;
+  }
+
+  .reservationSummary {
+    padding: 1rem 0.75rem;
+  }
+
+  .deadlineNotice {
+    padding: 0.75rem;
+  }
+
+  .small {
+    margin-left: 0;
+    margin-right: 0;
+  }
 }
