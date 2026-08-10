@@ -135,6 +135,31 @@
   letter-spacing: 0.04em;
 }
 
+.commentsBox {
+  line-height: 1.5;
+  resize: vertical;
+  field-sizing: content;
+  min-height: calc(4.5em + 1.75rem + 2px);
+}
+
+@supports not (field-sizing: content) {
+  .commentsBox {
+    min-height: calc(6em + 1.75rem + 2px); 
+  }
+
+  @media (max-width: 37.5em) {
+    .commentsBox {
+      min-height: calc(12em + 1.75rem + 2px); 
+    }
+  }
+
+  @media (max-width: 26.5em) {
+    .commentsBox {
+      min-height: calc(18em + 1.75rem + 2px);
+    }
+  }
+}
+
 .small {
   font-size: 1.05rem;
   color: var(--text-secondary);

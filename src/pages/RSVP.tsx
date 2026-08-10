@@ -549,14 +549,15 @@ export function RSVP() {
                     <label htmlFor={`comments-${guest.id}`}>
                       Comments (optional)
                     </label>
-                    <input
+                    <textarea
                       id={`comments-${guest.id}`}
-                      type="text"
+                      className={styles.commentsBox}
+                      rows={3}
                       value={rsvp.comments}
                       onChange={(e) =>
                         handleGuestChange(guest.id, 'comments', e.target.value)
                       }
-                      placeholder="Any comments, concerns, song requests, or dietary restrictions?"
+                      placeholder="Any comments, concerns, song requests, or dietary restrictions? If you have any dietary restrictions (vegan, gluten-free, allergies), please let us know here and our caterer can accommodate you!"
                     />
                   </div>
                 </>
@@ -642,14 +643,15 @@ export function RSVP() {
                   <label htmlFor="plusOneComments">
                     Comments (optional)
                   </label>
-                  <input
+                  <textarea
                     id="plusOneComments"
-                    type="text"
+                    className={styles.commentsBox}
+                    rows={3}
                     value={plusOne.comments}
                     onChange={(e) =>
                       setPlusOne((p) => ({ ...p, comments: e.target.value }))
                     }
-                    placeholder="Any comments, concerns, song requests, or dietary restrictions?"
+                    placeholder="Any comments, concerns, song requests, or dietary restrictions? If you have any dietary restrictions (vegan, gluten-free, allergies), please let us know here and our caterer can accommodate you!"
                   />
                 </div>
               </>

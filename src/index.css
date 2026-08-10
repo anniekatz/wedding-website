@@ -151,7 +151,8 @@ input:focus, select:focus, textarea:focus {
   background-color: var(--bg-card);
 }
 
-input::placeholder {
+input::placeholder,
+textarea::placeholder {
   color: var(--text-muted);
   font-style: italic;
 }
